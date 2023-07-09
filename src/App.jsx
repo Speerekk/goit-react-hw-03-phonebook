@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import ContactForm from './components/ContactForm/ContactForm';
 import ContactList from './components/ContactList/ContactList';
 import Filter from './components/Filter/Filter';
+// eslint-disable-next-line
 import styles from './App.module.css';
 
 const App = () => {
