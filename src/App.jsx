@@ -1,40 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { nanoid } from 'nanoid';
 import ContactForm from './components/ContactForm/ContactForm';
 import ContactList from './components/ContactList/ContactList';
 import Filter from './components/Filter/Filter';
-// eslint-disable-next-line
 import styles from './App.module.css';
 
-const App = () => {
-  const [contacts, setContacts] = useState([]);
-  const [filter, setFilter] = useState('');
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+class App extends React.Component {
+  state = {
+    contacts: [],
+    filter: '',
+    name: '',
+    number: '',
+  };
 
-  // Чтение контактов из локального хранилища при загрузке приложения
-  useEffect(() => {
+  componentDidMount() {
     const savedContacts = localStorage.getItem('contacts');
     if (savedContacts) {
-      setContacts(JSON.parse(savedContacts));
+      this.setState({ contacts: JSON.parse(savedContacts) });
     }
-  }, []);
+  }
 
-  // Запись контактов в локальное хранилище при изменении состояния contacts
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
 
-  const handleNameChange = event => {
-    setName(event.target.value);
+  handleNameChange = event => {
+    this.setState({ name: event.target.value });
   };
 
-  const handleNumberChange = event => {
-    setNumber(event.target.value);
+  handleNumberChange = event => {
+    this.setState({ number: event.target.value });
   };
 
-  const handleAddContact = event => {
+  handleAddContact = event => {
     event.preventDefault();
+
+    const { name, number, contacts } = this.state;
 
     const existingContact = contacts.find(
       contact => contact.name.toLowerCase() === name.toLowerCase()
@@ -47,50 +50,56 @@ const App = () => {
 
     const newContact = {
       id: nanoid(),
-      name: name,
-      number: number,
+      name,
+      number,
     };
 
-    setContacts(prevContacts => [...prevContacts, newContact]);
-    setName('');
-    setNumber('');
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, newContact],
+      name: '',
+      number: '',
+    }));
   };
 
-  const handleDeleteContact = contactId => {
-    setContacts(prevContacts =>
-      prevContacts.filter(contact => contact.id !== contactId)
+  handleDeleteContact = contactId => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
+    }));
+  };
+
+  handleFilterChange = event => {
+    this.setState({ filter: event.target.value });
+  };
+
+  render() {
+    const { contacts, filter, name, number } = this.state;
+    const filteredContacts = contacts.filter(contact =>
+      contact.name.toLowerCase().includes(filter.toLowerCase())
     );
-  };
 
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
+    return (
+      <div className={styles.app}>
+        <h1 className={styles.title}>Phonebook</h1>
 
-  return (
-    <div>
-      <h1>Phonebook</h1>
+        <ContactForm
+          name={name}
+          number={number}
+          onNameChange={this.handleNameChange}
+          onNumberChange={this.handleNumberChange}
+          onSubmit={this.handleAddContact}
+        />
 
-      <ContactForm
-        name={name}
-        number={number}
-        onNameChange={handleNameChange}
-        onNumberChange={handleNumberChange}
-        onSubmit={handleAddContact}
-      />
+        <h2 className={styles.subtitle}>Contacts</h2>
 
-      <h2>Contacts</h2>
+        <Filter value={filter} onChange={this.handleFilterChange} />
 
-      <Filter
-        value={filter}
-        onChange={event => setFilter(event.target.value)}
-      />
-
-      <ContactList
-        contacts={filteredContacts}
-        onDeleteContact={handleDeleteContact}
-      />
-    </div>
-  );
-};
+        <ContactList
+          contacts={filteredContacts}
+          onDeleteContact={this.handleDeleteContact}
+        />
+      </div>
+    );
+  }
+}
 
 export default App;

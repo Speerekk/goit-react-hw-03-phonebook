@@ -5,7 +5,7 @@
   padding: 20px;
 }
 
-.heading {
+.title {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +13,7 @@
   margin-bottom: 20px;
 }
 
-.subheading {
+.subtitle {
   display: flex;
   align-items: center;
   justify-content: center;
